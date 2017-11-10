@@ -21,7 +21,7 @@ AWS.config.setPromisesDependency(Promise);
 
 class EtcdNodeManager {
 
-  constructor(instanceId = null, backupBucket = null, backupKey = null, backupInterval = null, dataDir = null) {
+  constructor(instanceId = null, backupBucket = null, backupKey = null, backupInterval = null, dataDir = null, tagName = null, tagValue = null) {
 
     this.CLUSTER_STATE = {
       NEW: 'new',
@@ -47,6 +47,8 @@ class EtcdNodeManager {
     this.sqs = new AWS.SQS();
     this.asg = new AWS.AutoScaling();
     this.lifeCyclePollInterval = 5000;
+    this.tagName = tagName;
+    this.tagValue = tagValue;
 
     this.getNodeState = this.getNodeState.bind(this);
     this.getClusterMembers = this.getClusterMembers.bind(this);
@@ -286,7 +288,7 @@ class EtcdNodeManager {
     }
   };
 
-  async buildCluster(cluster = new Cluster({tagName: 'Name', tagValue: 'Etcd'})) {
+  async buildCluster(cluster = new Cluster({tagName: this.tagName, tagValue: this.tagValue})) {
 
     let localInstance = null;
     let members = null;
@@ -313,13 +315,14 @@ class EtcdNodeManager {
       if (!this.backupBucket) throw new Error('No backup bucket was defined.  Please set the "ETCD_BACKUP_BUCKET" env var or program flag');
       if (!this.backupKey) throw new Error('No backup key was defined.  Please set the "ETCD_BACKUP_KEY" env var or program flag');
 
-      let c = new Cluster({instanceId: this.instanceId, tagName: 'Name', tagValue: 'Etcd'});
+      let c = new Cluster({instanceId: this.instanceId, tagName: this.tagName, tagValue: this.tagValue});
       let localInstance = null, asg = null;
 
       try {
         localInstance = await c.getInstance();
+        logger.info(JSON.stringify(localInstance));
         asg = await c.getAutoScalingGroup();
-        await this.buildCluster(c);
+        await this.buildCluster({...c, tagValue: localInstance});
       }
       catch (e) {
 

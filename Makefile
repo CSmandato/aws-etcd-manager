@@ -1,6 +1,5 @@
 .PHONY: all clean dist/etcd build
 
-
 PLATFORM_BINARIES=dist/etcd-aws
 IMAGE_NAME=michaelmnm/aws-etcd-manager
 ETCD_VERSION=v3.2.9
