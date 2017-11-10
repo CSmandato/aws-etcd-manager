@@ -1,23 +1,19 @@
 FROM node:alpine
 
 ENV ETCDCTL_API=3
+ENV AWS_DEFAULT_OUTPUT=json
 
 RUN apk update && \
 	apk add coreutils binutils python g++ make && \
 	npm install aws-sdk -g
 
-ENV AWS_DEFAULT_OUTPUT=json
-
+RUN mkdir /backup
 ADD dist/etcd /bin/etcd
 ADD dist/etcdctl /bin/etcdctl
 
-RUN mkdir /backup
-
-COPY scripts/** /node-scripts/
 COPY scripts/sh/entrypoint.sh /usr/bin/entrypoint.sh
-
-RUN chmod +x /node-scripts/instance-lifecycle-termination-listener.js
 RUN chmod +x /usr/bin/entrypoint.sh
+COPY scripts/** /node-scripts/
 
 WORKDIR /node-scripts
 RUN npm install

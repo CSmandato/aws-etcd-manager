@@ -2,7 +2,7 @@
 
 
 PLATFORM_BINARIES=dist/etcd-aws
-IMAGE_NAME=michaelmnm/node-aws-cli
+IMAGE_NAME=michaelmnm/aws-etcd-manager
 ETCD_VERSION=v3.2.9
 
 all: $(PLATFORM_BINARIES)
@@ -20,3 +20,6 @@ dist/etcd:
 
 build: dist/etcd
 	docker build -t $(IMAGE_NAME) .
+
+push:
+	docker push ${IMAGE_NAME}
